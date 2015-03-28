@@ -106,15 +106,16 @@ class Sphere():
 
 
 spheres = [
-    Sphere(1E5, Vector( 1E5+1,40.8,81.6), Color(), Color(0.75, 0.25, 0.25),REFLECTION_TYPE['DIFFUSE']),# 左
-    Sphere(1E5, Vector(-1E5+99,40.8,81.6),Color(), Color(0.25, 0.25, 0.75),REFLECTION_TYPE['DIFFUSE']),# 右
-    Sphere(1E5, Vector(50,40.8, 1E5),     Color(), Color(0.75, 0.75, 0.75),REFLECTION_TYPE['DIFFUSE']),# 奥
-    Sphere(1E5, Vector(50,40.8,-1E5+170), Color(), Color(), REFLECTION_TYPE['DIFFUSE']),# 手前
-    Sphere(1E5, Vector(50, 1E5, 81.6),    Color(), Color(0.75, 0.75, 0.75),REFLECTION_TYPE['DIFFUSE']),# 床
-    Sphere(1E5, Vector(50,-1E5+81.6,81.6),Color(), Color(0.75, 0.75, 0.75),REFLECTION_TYPE['DIFFUSE']),# 天井
-    Sphere(16.5,Vector(27,16.5,47),       Color(), Color(1,1,1) * 0.99, REFLECTION_TYPE['SPECULAR']),# 鏡
-    Sphere(16.5,Vector(73,16.5,78),       Color(), Color(1,1,1) * 0.99, REFLECTION_TYPE['REFRACTION']),#ガラス
-    Sphere(5.0, Vector(50.0, 75.0, 81.6),Color(12,12,12), Color(), REFLECTION_TYPE['DIFFUSE']),#照明
+    Sphere(1E5, Vector( 1E5+1,40.8,81.6), Color(), Color(0.75, 0.25, 0.25), REFLECTION_TYPE['DIFFUSE']),# 左
+    Sphere(1E5, Vector(-1E5+99,40.8,81.6),Color(), Color(0.25, 0.75, 0.25), REFLECTION_TYPE['DIFFUSE']),# 右
+    Sphere(1E5, Vector(50,40.8, 1E5),     Color(), Color(0.75, 0.75, 0.75), REFLECTION_TYPE['DIFFUSE']),# 奥
+    Sphere(1E5, Vector(50,40.8,-1E5+250), Color(), Color(),                 REFLECTION_TYPE['DIFFUSE']),# 手前
+    Sphere(1E5, Vector(50, 1E5, 81.6),    Color(), Color(0.75, 0.75, 0.75), REFLECTION_TYPE['DIFFUSE']),# 床
+    Sphere(1E5, Vector(50,-1E5+81.6,81.6),Color(), Color(0.75, 0.75, 0.75), REFLECTION_TYPE['DIFFUSE']),# 天井
+    Sphere(20.0,Vector(65,20  ,20),       Color(), Color(0.25, 0.25, 0.75), REFLECTION_TYPE['DIFFUSE']),# 青球
+    Sphere(16.5,Vector(27,16.5,47),       Color(), Color(0.99, 0.99, 0.99), REFLECTION_TYPE['SPECULAR']),# 鏡
+    Sphere(16.5,Vector(77,16.5,78),       Color(), Color(0.99, 0.99, 0.99), REFLECTION_TYPE['REFRACTION']),#ガラス
+    Sphere(15.0, Vector(50.0, 90.0, 81.6),Color(12,12,12), Color(),        REFLECTION_TYPE['DIFFUSE']),#照明
 ]
 
 def get_intersect_obj(spheres, ray):
@@ -231,7 +232,7 @@ def main():
     height = 120
 
     #samples = 32
-    samples = 16
+    samples = 32
 
     camera = Ray(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).normalize())
     screen_axis_x = Vector(width * 0.5135 / height)

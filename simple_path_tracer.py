@@ -16,8 +16,8 @@ REFLECTION_TYPE = {
 def clamp(x):
     if x < 0:
         return 0
-    elif x > 1:
-        return 1
+    elif x > 255:
+        return 255
     else:
         return x
 
@@ -59,6 +59,7 @@ class Vector():
 
     def normalize(self):
         return Vector(self.x, self.y, self.z).devide(self.get_length())
+
 
 class Color(Vector):
     pass
@@ -108,9 +109,25 @@ spheres = [
     Sphere(16.5,Vector(73,16.5,78),       Color(), Color(1,1,1).multiply(0.99), REFLECTION_TYPE['REFRACTION']),#ガラス
 ]
 
+def save_ppm(filename, image, width, height):
+    COLOR_RANGE = 255
+    header = "P3\n{width} {height}\n{color_range}\n".format(
+        width=width, height=height, color_range=COLOR_RANGE
+    )
+    with open(filename, 'w') as fh:
+        fh.write(header)
+        for pixel in image:
+            fh.write(
+                '{r} {g} {b} '.format(
+                    r=int(clamp(pixel.x)),
+                    g=int(clamp(pixel.y)),
+                    b=int(clamp(pixel.z)),
+                )
+            )
+
 def main():
-    width = 640
-    height = 480
+    width = 320
+    height = 240
 
     camera = Ray(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).normalize())
     screen_axis_x = Vector(width * 0.5135 / height)
@@ -134,6 +151,7 @@ def main():
                         camera.direction
                     )
                     image[image_index] = image[image_index]
+    save_ppm('output.ppm', image, width, height)
 
 
 if __name__ == '__main__':

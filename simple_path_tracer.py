@@ -125,10 +125,24 @@ def get_intersect_obj(spheres, ray):
     for i in range(n):
         d = spheres[i].intersect(ray)
         if 0.0 < d < distance:
-            print 'in if', d
             distance = d
             obj_id = i
     return (obj_id, distance)
+
+def _calc_diffuse(obj, depth, hitpoint, orienting_normal, russian_roulette_probability):
+    w = orienting_normal
+    if math.fabs(w.x > 0.1):
+        u = Vector(0.0, 1.0, 0.0).cross(w).normalize()
+    else:
+        u = Vector(1.0, 0.0, 0.0).cross(w).normalize()
+    v = w.cross(u)
+    r1 = 2 * PI * random.random()
+    r2 = random.random()
+    r2s = math.sqrt(r2)
+    direction = (u * math.cos(r1) * r2s + v * math.sin(r1) * r2s + w * math.sqrt(1.0 - r2)).normalize()
+    return obj.emission + obj.color.multiply(
+        radiance(Ray(hitpoint, direction), depth+1) / russian_roulette_probability
+    )
 
 def radiance(ray, depth):
     obj_id, distance = get_intersect_obj(spheres, ray)
@@ -136,38 +150,18 @@ def radiance(ray, depth):
         return BACKGROUND_COLOR
     obj = spheres[obj_id]
     hitpoint = ray.origin + ray.direction * distance
-    normal = hitpoint - obj.position
-    orienting_normal = normal if normal.dot(ray.direction) else normal * -1.0
+    normal = (hitpoint - obj.position).normalize()
+    orienting_normal = normal if normal.dot(ray.direction) < 0.0 else normal * -1.0
     russian_roulette_probability = max(obj.color.x, obj.color.y, obj.color.z)
-    print 'russian:', russian_roulette_probability
     if depth > MAX_DEPTH:
-        if random.randint(0,1) >= russian_roulette_probability:
+        if random.random() >= russian_roulette_probability:
             return obj.emission
     else:
         russian_roulette_probability = 1.0
 
     if obj.reflection_type == REFLECTION_TYPE['DIFFUSE']:
-        print 'diffuse'
-        w = orienting_normal
-        if math.fabs(w.x > 0.1):
-            u = w.cross(
-                Vector(0.0, 1.0, 0.0)
-            ).normalize()
-        else:
-            u = w.cross(
-                Vector(1.0, 0.0, 0.0)
-            ).normalize()
-        v = w.cross(u)
-        r1 = 2 * PI * random.randint(0,1)
-        r2 = random.randint(0,1)
-        r2s = math.sqrt(r2)
-        direction = (u * math.cos(r1) + v * math.sin(r1) + v * r2s + w * math.sqrt(1.0 - r2)).normalize()
-        return obj.emission + obj.color.multiply(
-            radiance(Ray(hitpoint, direction), depth+1) / russian_roulette_probability
-        )
+        return _calc_diffuse(obj, depth, hitpoint, orienting_normal, russian_roulette_probability)
     elif obj.reflection_type == REFLECTION_TYPE['SPECULAR']:
-        print obj.emission
-        print 'spec'
         return obj.emission + obj.color.multiply(
             radiance(Ray(hitpoint, ray.direction - normal * 2.0 * normal.dot(ray.direction)), depth+1) / russian_roulette_probability
         )
@@ -191,8 +185,8 @@ def save_ppm(filename, image, width, height):
 def main():
     #width = 320
     #height = 240
-    width = 40
-    height = 30
+    width = 160
+    height = 120
 
     #samples = 32
     samples = 16
@@ -218,13 +212,12 @@ def main():
                             screen_axis_y * (
                                 ((sub_y + 0.5 + dy) / 2.0 + y) / height - 0.5
                             )
-                        ) + (
-                            camera.direction
-                        )
+                        ) + camera.direction
+                        
                         accumulated_radiance = accumulated_radiance + radiance(
                             Ray(camera.origin + direction * 130.0, direction.normalize()), 0
                         ) / samples
-                        image[image_index] = image[image_index] + accumulated_radiance
+                    image[image_index] = image[image_index] + accumulated_radiance
     save_ppm('output.ppm', image, width, height)
 
 

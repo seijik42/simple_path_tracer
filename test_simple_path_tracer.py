@@ -93,3 +93,17 @@ class SphereTest(unittest.TestCase):
         sphere = Sphere(1.0, Vector(0.0, 0.0, 0.0), Color(), Color(1.0, 1.0, 1.0), 1)
         ray = Ray(Vector(10.0, 0.0, 0.0), Vector(-1.0, 0.0, 0.0))
         self.assertEqual(sphere.intersect(ray), 9.0)
+
+class IntersectTest(unittest.TestCase):
+
+    def test_get_intersect_obj(self):
+
+        spheres = [
+            Sphere(1.0, Vector(0.0, 10.0, 0.0), Color(), Color(1.0, 1.0, 1.0), 1),
+            Sphere(1.0, Vector(0.0, 0.0, 0.0), Color(), Color(1.0, 1.0, 1.0), 1),
+        ]
+        ray = Ray(Vector(10.0, 0.0, 0.0), Vector(-1.0, 0.0, 0.0))
+        self.assertEqual(simple_path_tracer.get_intersect_obj(spheres, ray), (1, 9.0))
+        
+        ray2 = Ray(Vector(10.0, 0.0, 0.0), Vector(1.0, 0.0, 0.0))
+        self.assertEqual(simple_path_tracer.get_intersect_obj(spheres, ray2), (-1, 1E6))

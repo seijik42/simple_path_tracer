@@ -4,7 +4,7 @@ import math
 import random
 
 PI = math.pi
-INF = float('inf')
+INF = 1E6
 EPS = 1E-6
 MAX_DEPTH = 5
 
@@ -15,7 +15,6 @@ REFLECTION_TYPE = {
 }
 
 def clamp(x):
-    print 'clamp:', x
     if x < 0:
         return 0
     elif x > 1:
@@ -119,19 +118,20 @@ spheres = [
     Sphere(5.0, Vector(50.0, 75.0, 81.6),Color(12,12,12), Color(), REFLECTION_TYPE['DIFFUSE']),
 ]
 
-def get_intersect_obj(ray):
+def get_intersect_obj(spheres, ray):
     n = len(spheres)
     distance = INF
     obj_id = -1
     for i in range(n):
         d = spheres[i].intersect(ray)
         if 0.0 < d < distance:
+            print 'in if', d
             distance = d
             obj_id = i
     return (obj_id, distance)
 
 def radiance(ray, depth):
-    obj_id, distance = get_intersect_obj(ray)
+    obj_id, distance = get_intersect_obj(spheres, ray)
     if (distance >= INF ):
         return BACKGROUND_COLOR
     obj = spheres[obj_id]
@@ -191,8 +191,8 @@ def save_ppm(filename, image, width, height):
 def main():
     #width = 320
     #height = 240
-    width = 160
-    height = 120
+    width = 40
+    height = 30
 
     #samples = 32
     samples = 16

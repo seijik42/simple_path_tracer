@@ -54,9 +54,9 @@ class Vector():
 
     def cross(self, vec_b):
         return Vector(
-            (self.y*vec_b.z - self.y*vec_b.y),
+            (self.y*vec_b.z - self.z*vec_b.y),
             (self.z*vec_b.x - self.x*vec_b.z),
-            (self.x*vec_b.y - self.z*vec_b.x),
+            (self.x*vec_b.y - self.y*vec_b.x),
         )
 
     def multiply(self, vec_b):
@@ -71,9 +71,7 @@ class Vector():
 
 
 class Color(Vector):
-
-    def __init__(self, r=0.0, g=0.0, b=0.0):
-        Vector.__init__(self, r, g, b)
+    pass
 
 BACKGROUND_COLOR = Color(0.0, 0.0, 0.0)
 
@@ -191,13 +189,13 @@ def save_ppm(filename, image, width, height):
             )
 
 def main():
-    width = 320
-    height = 240
-    #width = 32
-    #height = 24
+    #width = 320
+    #height = 240
+    width = 160
+    height = 120
 
     #samples = 32
-    samples = 4
+    samples = 16
 
     camera = Ray(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).normalize())
     screen_axis_x = Vector(width * 0.5135 / height)

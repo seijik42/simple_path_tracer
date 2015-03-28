@@ -113,9 +113,8 @@ spheres = [
     Sphere(1E5, Vector(50, 1E5, 81.6),    Color(), Color(0.75, 0.75, 0.75),REFLECTION_TYPE['DIFFUSE']),# 床
     Sphere(1E5, Vector(50,-1E5+81.6,81.6),Color(), Color(0.75, 0.75, 0.75),REFLECTION_TYPE['DIFFUSE']),# 天井
     Sphere(16.5,Vector(27,16.5,47),       Color(), Color(1,1,1) * 0.99, REFLECTION_TYPE['SPECULAR']),# 鏡
-    #Sphere(16.5,Vector(73,16.5,78),       Color(), Color(1,1,1) * 0.99, REFLECTION_TYPE['REFRACTION']),#ガラス
-    Sphere(16.5,Vector(73,16.5,78),       Color(), Color(1,1,1) * 0.99, REFLECTION_TYPE['DIFFUSE']),#ガラス
-    Sphere(5.0, Vector(50.0, 75.0, 81.6),Color(12,12,12), Color(), REFLECTION_TYPE['DIFFUSE']),
+    Sphere(16.5,Vector(73,16.5,78),       Color(), Color(1,1,1) * 0.99, REFLECTION_TYPE['REFRACTION']),#ガラス
+    Sphere(5.0, Vector(50.0, 75.0, 81.6),Color(12,12,12), Color(), REFLECTION_TYPE['DIFFUSE']),#照明
 ]
 
 def get_intersect_obj(spheres, ray):
@@ -144,6 +143,49 @@ def _calc_diffuse(obj, depth, hitpoint, orienting_normal, russian_roulette_proba
         radiance(Ray(hitpoint, direction), depth+1) / russian_roulette_probability
     )
 
+
+def _calc_specular(ray, obj, depth, hitpoint, normal, russian_roulette_probability):
+        return obj.emission + obj.color.multiply(
+            radiance(Ray(hitpoint, ray.direction - normal * 2.0 * normal.dot(ray.direction)), depth+1) / russian_roulette_probability
+        )
+
+def _calc_refraction(ray, obj, depth, hitpoint, normal, orienting_normal, russian_roulette_probability):
+        reflection_ray = Ray(hitpoint, ray.direction - normal * 2.0 * normal.dot(ray.direction))
+        into = normal.dot(orienting_normal) > 0.0
+        NC = 1.0
+        NT = 1.5
+        nnt = NC / NT if into else NT / NC
+        ddn = ray.direction.dot(orienting_normal)
+        cos2t = 1.0 - nnt**2 * (1.0 - ddn**2)
+
+        if (cos2t < 0.0):
+            return obj.emission + obj.color.multiply(
+                radiance(reflection_ray, depth + 1)
+            ) / russian_roulette_probability
+        tdir = ray.direction * nnt - normal * (1.0 if into else -1.0) * (ddn * nnt + math.sqrt(cos2t))
+
+        r0 = (NT - NC)**2 / (NT + NC)**2
+        c = 1.0 - (-ddn if into else tdir.dot(normal))
+        re = r0 + (1.0 - r0) * c**5
+        tr = 1.0 - re
+        probability = 0.25 + 0.5 * re
+
+        if (depth > 2):
+           if random.random() < probability:
+                return obj.emission + obj.color.multiply(
+                    radiance(reflection_ray, depth + 1) * re
+                ) / probability / russian_roulette_probability
+           else:
+                return obj.emission + obj.color.multiply(
+                    radiance(Ray(hitpoint, tdir), depth + 1) * tr
+                ) / (1.0 - probability) / russian_roulette_probability
+        else:
+            return obj.emission + obj.color.multiply(
+                radiance(reflection_ray, depth+1) * re + radiance(Ray(hitpoint, tdir), depth + 1) * tr
+            ) / russian_roulette_probability
+
+
+
 def radiance(ray, depth):
     obj_id, distance = get_intersect_obj(spheres, ray)
     if (distance >= INF ):
@@ -162,9 +204,9 @@ def radiance(ray, depth):
     if obj.reflection_type == REFLECTION_TYPE['DIFFUSE']:
         return _calc_diffuse(obj, depth, hitpoint, orienting_normal, russian_roulette_probability)
     elif obj.reflection_type == REFLECTION_TYPE['SPECULAR']:
-        return obj.emission + obj.color.multiply(
-            radiance(Ray(hitpoint, ray.direction - normal * 2.0 * normal.dot(ray.direction)), depth+1) / russian_roulette_probability
-        )
+        return _calc_specular(ray, obj, depth, hitpoint, normal, russian_roulette_probability)
+    elif obj.reflection_type == REFLECTION_TYPE['REFRACTION']:
+        return _calc_refraction(ray, obj, depth, hitpoint, normal, orienting_normal, russian_roulette_probability)
 
 def save_ppm(filename, image, width, height):
     COLOR_RANGE = 255
@@ -193,7 +235,7 @@ def main():
 
     camera = Ray(Vector(50.0, 52.0, 295.6), Vector(0.0, -0.042612, -1.0).normalize())
     screen_axis_x = Vector(width * 0.5135 / height)
-    screen_axis_y = screen_axis_x.cross(camera.direction) * 0.5135
+    screen_axis_y = screen_axis_x.cross(camera.direction).normalize() * 0.5135
     image = [Color() for i in range(width*height)]
 
     for y in range(height):

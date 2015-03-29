@@ -22,6 +22,10 @@ python simple_path_tracer.py
 
 ## 出力サンプル
 
+* サイズ：640 * 480
+* サンプル数：1024
+* レンダリング時間：9時間40分
+
 ![output_image](https://github.com/seijik42/simple_path_tracer/blob/master/output/output_1024.png)
 
 ## 参照

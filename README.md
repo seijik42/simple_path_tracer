@@ -20,6 +20,10 @@ python simple_path_tracer.py
 * コメントの充実
 * 最新の手法を取り入れて出力結果を改善する
 
+## 出力サンプル
+
+![output_image](https://github.com/seijik42/simple_path_tracer/blob/master/output/output_1024.png)
+
 ## 参照
 
 ほぼこちらのクローンです。
